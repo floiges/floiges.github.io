@@ -1,0 +1,188 @@
+<!DOCTYPE html><html lang="zh-CN" data-default-color-scheme="&#34;auto&#34;"><head><meta charset="UTF-8"><link rel="apple-touch-icon" sizes="76x76" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" href="/images/favicon.ico"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="theme-color" content="#2f4154"><meta name="description" content="懂得越多，不懂得越多"><meta name="author" content="Raindew"><meta name="keywords" content="TechLife"><title>微信小程序之如何保存小程序码 - Raindew Tech</title><link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css"><link rel="stylesheet" href="/lib/hint/hint.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_pf9vaxs7x7b.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css"><link rel="stylesheet" href="/css/main.css"><script src="/js/utils.js"></script><script src="/js/color-schema.js"></script><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Raindew Tech" type="application/atom+xml"></head><body><header style="height:70vh"><nav id="navbar" class="navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar"><div class="container"> <a class="navbar-brand" href="/">&nbsp;<strong>Raindew Tech</strong>&nbsp;</a> <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><div class="animated-icon"><span></span><span></span><span></span></div></button><div class="collapse navbar-collapse" id="navbarSupportedContent"><ul class="navbar-nav ml-auto text-center"><li class="nav-item"><a class="nav-link" href="/"><i class="iconfont icon-home-fill"></i> 首页</a></li><li class="nav-item"><a class="nav-link" href="/archives/"><i class="iconfont icon-archive-fill"></i> 归档</a></li><li class="nav-item"><a class="nav-link" href="/categories/"><i class="iconfont icon-category-fill"></i> 分类</a></li><li class="nav-item"><a class="nav-link" href="/tags/"><i class="iconfont icon-tags-fill"></i> 标签</a></li><li class="nav-item"><a class="nav-link" href="/about/"><i class="iconfont icon-user-fill"></i> 关于</a></li><li class="nav-item"><a class="nav-link" href="/404/"><i class="iconfont icon-link-fill"></i> 404</a></li><li class="nav-item" id="search-btn"> <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i class="iconfont icon-search"></i>&nbsp;</a></li><li class="nav-item" id="color-toggle-btn"> <a class="nav-link" href="javascript:">&nbsp;<i class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a></li></ul></div></div></nav><div class="banner intro-2" id="background" parallax="true" style="background:url(/images/code_bg.png) no-repeat center center;background-size:cover"><div class="full-bg-img"><div class="mask flex-center" style="background-color:rgba(0,0,0,.3)"><div class="container page-header text-center fade-in-up"><span class="h2" id="subtitle"></span><div class="mt-3"><span class="post-meta mr-2"><i class="iconfont icon-author" aria-hidden="true"></i> Raindew</span><span class="post-meta"><i class="iconfont icon-date-fill" aria-hidden="true"></i> <time datetime="2020-04-17 17:42" pubdate>2020年4月17日 下午</time></span></div><div class="mt-1"><span class="post-meta mr-2"><i class="iconfont icon-chart"></i> 1.5k 字</span><span class="post-meta mr-2"><i class="iconfont icon-clock-fill"></i> 20 分钟</span></div></div></div></div></div></header><main><div class="container-fluid"><div class="row"><div class="d-none d-lg-block col-lg-2"></div><div class="col-lg-8 nopadding-md"><div class="container nopadding-md" id="board-ctn"><div class="py-5" id="board"><article class="post-content mx-auto" id="post"><h1 style="display:none">微信小程序之如何保存小程序码</h1><p class="note note-info"> 本文最后更新于：2022年7月6日 上午</p><div class="markdown-body" id="post-body"><p>兵来将挡，水来土掩</p><a id="more"></a><blockquote><p>最近搞了点微信小程序的东西，其中一个需求就是要把云函数生成的小程序码，保存到本地相册，便于分享。</p></blockquote><h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><h3 id="关于云函数生成小程序码"><a href="#关于云函数生成小程序码" class="headerlink" title="关于云函数生成小程序码"></a>关于云函数生成小程序码</h3><p>云函数具体怎么用就不说了，官方文档上一看就明白了。我们这里需要用到的是 <a target="_blank" rel="noopener" href="https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/qr-code/wxacode.getUnlimited.html">wxacode.getUnlimited</a> 这个获取小程序码的接口。文档上说明，这个接口调用成功之后，返回的小程序码数据是 <code>Buffer</code>形式的。</p><p>按照我们要实现的需求来说，生成小程序码之后，肯定会有如下的两个操作：</p><ul><li>弹窗显示生成的小程序码</li><li>保存小程序码到相册</li></ul><h3 id="wx-arrayBufferToBase64-ArrayBuffer-arrayBuffer"><a href="#wx-arrayBufferToBase64-ArrayBuffer-arrayBuffer" class="headerlink" title="wx.arrayBufferToBase64(ArrayBuffer arrayBuffer)"></a><a target="_blank" rel="noopener" href="https://developers.weixin.qq.com/miniprogram/dev/api/base/wx.arrayBufferToBase64.html">wx.arrayBufferToBase64(ArrayBuffer arrayBuffer)</a></h3><p>微信是为我们提供了 <code>arrayBuffer</code> 转 <code>base64</code> 的方法的：</p><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> src = <span class="hljs-string">`data:image/png;base64,<span class="hljs-subst">$&#123;wx.arrayBufferToBase64(buffer)&#125;</span>`</span>;</code></pre><p>转化之后，直接用 <code>image</code> 组件显示图片就可以了。但是要保存到相册，<code>base64</code> 肯定是不行的，该怎么办呢？</p><h3 id="wx-saveImageToPhotosAlbum-Object-object"><a href="#wx-saveImageToPhotosAlbum-Object-object" class="headerlink" title="wx.saveImageToPhotosAlbum(Object object)"></a><a target="_blank" rel="noopener" href="https://developers.weixin.qq.com/miniprogram/dev/api/media/image/wx.saveImageToPhotosAlbum.html">wx.saveImageToPhotosAlbum(Object object)</a></h3><pre><code class="hljs javascript">wx.saveImageToPhotosAlbum(&#123;
+	filePath: tempFilePath, <span class="hljs-comment">// 图片文件路径，可以是临时文件路径或永久文件路径 (本地路径) ，不支持网络路径</span>
+	success: <span class="hljs-function">() =&gt;</span> &#123;
+		wx.showToast(&#123;
+			title: <span class="hljs-string">&#x27;保存成功，从相册中分享给朋友吧&#x27;</span>,
+			icon: <span class="hljs-string">&#x27;none&#x27;</span>,
+			duration: <span class="hljs-number">3000</span>,
+		&#125;);
+	&#125;,
+	fail: <span class="hljs-function">() =&gt;</span> &#123;
+		wx.showToast(&#123;
+			title: <span class="hljs-string">&#x27;图片保存失败，请稍候重试&#x27;</span>,
+			icon: <span class="hljs-string">&#x27;none&#x27;</span>,
+			duration: <span class="hljs-number">2000</span>,
+		&#125;);
+	&#125;,
+&#125;);</code></pre><p>文档上说的很明白，我们首先要获取到图片的临时或永久文件路径，那就再一步步找文档。。。</p><h3 id="wx-canvasToTempFilePath-Object-object-Object-this-wx-canvasToTempFilePath-Object-object-Object-this"><a href="#wx-canvasToTempFilePath-Object-object-Object-this-wx-canvasToTempFilePath-Object-object-Object-this" class="headerlink" title="[wx.canvasToTempFilePath(Object object, Object this)](wx.canvasToTempFilePath(Object object, Object this))"></a>[wx.canvasToTempFilePath(Object object, Object this)](wx.canvasToTempFilePath(Object object, Object this))</h3><blockquote><p>把当前画布指定区域的内容导出生成指定大小的图片</p></blockquote><p><code>canvas</code>，没错，这正是我们需要的，那么我们就可以梳理出整个保存图片的流程了：</p><ul><li>调用云函数，获取到小程序 <code>buffer</code>数据</li><li>将图片和一些文案描述(如果需要的话)画在画布上</li><li><code>canvas</code>导出文件临时路径</li><li>保存图片</li></ul><h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><h3 id="base64src-js"><a href="#base64src-js" class="headerlink" title="base64src.js"></a><code>base64src.js</code></h3><blockquote><p>工具方法，主要是先把小程序码的 <code>buffer</code> 数据写入到本地文件</p><p>这样既可以直接用 <code>image</code> 显示，又可以直接画在 <code>canvas</code>中，一举两得</p></blockquote><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> fileManager = wx.getFileSystemManager();
+<span class="hljs-keyword">const</span> BASE_FILE_NAME = <span class="hljs-string">&#x27;tmp_base64src&#x27;</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> (bufferData) =&gt; &#123;
+	<span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> &#123;
+		<span class="hljs-keyword">const</span> filePath = <span class="hljs-string">`<span class="hljs-subst">$&#123;wx.env.USER_DATA_PATH&#125;</span>/<span class="hljs-subst">$&#123;BASE_FILE_NAME&#125;</span>.png`</span>;
+		fileManager.writeFile(&#123;
+			filePath,
+			data: bufferData,
+			encoding: <span class="hljs-string">&#x27;binary&#x27;</span>,
+			success: <span class="hljs-function">() =&gt;</span> &#123;
+				resolve(filePath);
+			&#125;,
+			fail: <span class="hljs-function">() =&gt;</span> &#123;
+				reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&#x27;WRITE BASE64SRC ERROR&#x27;</span>));
+			&#125;,
+		&#125;);
+	&#125;);
+&#125;;</code></pre><h3 id="生成小程序码"><a href="#生成小程序码" class="headerlink" title="生成小程序码"></a>生成小程序码</h3><pre><code class="hljs javascript">wx.cloud.callFunction(&#123;
+	name: <span class="hljs-string">&#x27;code&#x27;</span>,
+	data: &#123;
+		<span class="hljs-comment">/* your data */</span>
+	&#125;,
+	success: <span class="hljs-function">(<span class="hljs-params">res</span>) =&gt;</span> &#123;
+		<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;[云函数] [code] 调用成功&#x27;</span>);
+		<span class="hljs-keyword">const</span> &#123;
+			result: &#123; buffer &#125;,
+		&#125; = res;
+		base64Src(buffer).then(<span class="hljs-function">(<span class="hljs-params">src</span>) =&gt;</span> &#123;
+			<span class="hljs-comment">// 获取到小程序码对应的本地路径</span>
+			<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;src&#x27;</span>, src);
+		&#125;);
+	&#125;,
+	fail: <span class="hljs-function">(<span class="hljs-params">err</span>) =&gt;</span> &#123;
+		<span class="hljs-built_in">console</span>.error(<span class="hljs-string">&#x27;[云函数] [code] 调用失败&#x27;</span>);
+	&#125;,
+	complete: <span class="hljs-function">() =&gt;</span> &#123;
+		wx.hideLoading();
+	&#125;,
+&#125;);</code></pre><h3 id="canvas绘制图片和文字"><a href="#canvas绘制图片和文字" class="headerlink" title="canvas绘制图片和文字"></a><code>canvas</code>绘制图片和文字</h3><pre><code class="hljs javascript"><span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.ctx) &#123;
+	<span class="hljs-built_in">this</span>.ctx = wx.createCanvasContext(<span class="hljs-string">&#x27;miniCanvas&#x27;</span>, <span class="hljs-built_in">this</span>);
+&#125;
+
+<span class="hljs-built_in">this</span>.ctx.setFillStyle(<span class="hljs-string">&#x27;#fff&#x27;</span>);
+<span class="hljs-built_in">this</span>.ctx.fillRect(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">200</span>, <span class="hljs-number">210</span>);
+<span class="hljs-comment">// this.properties.src 对应上一步生成的本地路径</span>
+<span class="hljs-built_in">this</span>.ctx.drawImage(<span class="hljs-built_in">this</span>.properties.src, <span class="hljs-number">25</span>, <span class="hljs-number">20</span>, <span class="hljs-number">150</span>, <span class="hljs-number">150</span>);
+
+<span class="hljs-built_in">this</span>.ctx.save();
+<span class="hljs-built_in">this</span>.ctx.setFontSize(<span class="hljs-number">16</span>);
+<span class="hljs-built_in">this</span>.ctx.setTextAlign(<span class="hljs-string">&#x27;left&#x27;</span>);
+<span class="hljs-built_in">this</span>.ctx.setFillStyle(<span class="hljs-string">&#x27;#333333&#x27;</span>);
+<span class="hljs-comment">// 绘制多行文字</span>
+<span class="hljs-comment">// 这里指定每行文字高 30</span>
+<span class="hljs-keyword">let</span> lineWidth = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">let</span> lastSubStrIndex = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">let</span> startY = <span class="hljs-number">190</span>;
+<span class="hljs-keyword">const</span> startX = <span class="hljs-number">25</span>;
+<span class="hljs-keyword">const</span> wordsHeight = <span class="hljs-number">30</span>;
+<span class="hljs-keyword">const</span> &#123; description &#125; = <span class="hljs-built_in">this</span>.properties;
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; description.length; i++) &#123;
+	lineWidth += <span class="hljs-built_in">this</span>.ctx.measureText(description[i]).width;
+	<span class="hljs-keyword">if</span> (lineWidth &gt; <span class="hljs-number">150</span>) &#123;
+		<span class="hljs-built_in">this</span>.ctx.fillText(
+			description.substring(lastSubStrIndex, i),
+			startX,
+			startY,
+		);
+		startY += wordsHeight;
+		lineWidth = <span class="hljs-number">0</span>;
+		lastSubStrIndex = i;
+	&#125;
+	<span class="hljs-keyword">if</span> (i === description.length - <span class="hljs-number">1</span>) &#123;
+		<span class="hljs-built_in">this</span>.ctx.fillText(
+			description.substring(lastSubStrIndex, i + <span class="hljs-number">1</span>),
+			startX,
+			startY,
+		);
+	&#125;
+&#125;
+<span class="hljs-built_in">this</span>.ctx.restore();
+<span class="hljs-built_in">this</span>.ctx.draw();</code></pre><h3 id="保存相册"><a href="#保存相册" class="headerlink" title="保存相册"></a>保存相册</h3><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> scale = app.globalData.pixelRatio;
+wx.canvasToTempFilePath(
+	&#123;
+		x: <span class="hljs-number">0</span>,
+		y: <span class="hljs-number">0</span>,
+		width: <span class="hljs-number">200</span>,
+		height: <span class="hljs-number">210</span>,
+		destWidth: <span class="hljs-number">200</span> * scale,
+		destHeight: <span class="hljs-number">210</span> * scale,
+		canvasId: <span class="hljs-string">&#x27;miniCanvas&#x27;</span>,
+		success: <span class="hljs-function">(<span class="hljs-params">res</span>) =&gt;</span> &#123;
+			<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;onSave -&gt; res.tempFilePath&#x27;</span>, res.tempFilePath);
+			<span class="hljs-comment">// 获取到临时路径，可以保存相册了</span>
+			wx.saveImageToPhotosAlbum(
+				&#123;
+					filePath: res.tempFilePath,
+					success: <span class="hljs-function">() =&gt;</span> &#123;
+						wx.showToast(&#123;
+							title: <span class="hljs-string">&#x27;保存成功，从相册中分享给朋友吧&#x27;</span>,
+							icon: <span class="hljs-string">&#x27;none&#x27;</span>,
+							duration: <span class="hljs-number">3000</span>,
+						&#125;);
+					&#125;,
+					fail: <span class="hljs-function">() =&gt;</span> &#123;
+						wx.showToast(&#123;
+							title: <span class="hljs-string">&#x27;图片保存失败，请稍候重试&#x27;</span>,
+							icon: <span class="hljs-string">&#x27;none&#x27;</span>,
+							duration: <span class="hljs-number">2000</span>,
+						&#125;);
+					&#125;,
+				&#125;,
+				<span class="hljs-built_in">this</span>,
+			);
+		&#125;,
+		fail: <span class="hljs-function">() =&gt;</span> &#123;
+			wx.showToast(&#123;
+				title: <span class="hljs-string">&#x27;图片保存失败，请稍候重试&#x27;</span>,
+				icon: <span class="hljs-string">&#x27;none&#x27;</span>,
+				duration: <span class="hljs-number">2000</span>,
+			&#125;);
+		&#125;,
+	&#125;,
+	<span class="hljs-built_in">this</span>,
+);</code></pre><h2 id="其他问题"><a href="#其他问题" class="headerlink" title="其他问题"></a>其他问题</h2><blockquote><p>因为保存系统相册是需要对应的权限的，第一次调用保存相册的时候，系统会自动弹出获取权限的弹窗，这里就存在两种情况：</p><ul><li>如果用户点击了同意，那么之后都会有权限了，这是正常情况</li><li>如果点击了拒绝，那么下次用户再次点击保存相册的时候，系统不会再次弹出获取权限的弹窗，这种情况需要我们来额外处理，比如自定义一个权限弹窗，引导用户去打开权限</li></ul></blockquote><pre><code class="hljs javascript"><span class="hljs-comment">// 相册权限判断</span>
+wx.getSetting(&#123;
+	success: <span class="hljs-function">(<span class="hljs-params">res</span>) =&gt;</span> &#123;
+		<span class="hljs-keyword">if</span> (res.authSetting[<span class="hljs-string">&#x27;scope.writePhotosAlbum&#x27;</span>]) &#123;
+			<span class="hljs-comment">// 如果存在授权，可直接调用 canvas 绘制及保存相册的方法</span>
+			<span class="hljs-keyword">return</span>;
+		&#125;
+		<span class="hljs-comment">// 不存在授权，提前授权</span>
+		wx.authorize(&#123;
+			scope: <span class="hljs-string">&#x27;scope.writePhotosAlbum&#x27;</span>,
+			success: <span class="hljs-function">() =&gt;</span> &#123;
+				<span class="hljs-comment">// 授权成功，可直接调用 canvas 绘制及保存相册的方法</span>
+			&#125;,
+			fail: <span class="hljs-function">() =&gt;</span> &#123;
+				<span class="hljs-comment">// 对应相册授权被拒绝后的情况</span>
+				<span class="hljs-comment">// 自定义授权弹窗，引导去授权</span>
+			&#125;,
+		&#125;);
+	&#125;,
+&#125;);
+
+<span class="hljs-comment">// wxml 简易版授权弹窗</span>
+&lt;view <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&#x27;minicode-dialog&#x27;</span>&gt;
+	&lt;view <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&#x27;minicode-dialog-header&#x27;</span>&gt;尚未获取保存相册的权限，请先授权吧&lt;/view&gt;
+	&lt;view <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&#x27;minicode-dialog-footer&#x27;</span>&gt;
+		&lt;button
+			<span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&#x27;minicode-dialog-action&#x27;</span>
+			open-type=<span class="hljs-string">&#x27;openSetting&#x27;</span>
+			bindtap=<span class="hljs-string">&#x27;onConfirm&#x27;</span>&gt;
+			授权
+		&lt;/button&gt;
+		&lt;button <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&#x27;minicode-dialog-action&#x27;</span> bindtap=<span class="hljs-string">&#x27;onCancel&#x27;</span>&gt;
+			取消
+		&lt;/button&gt;
+	&lt;/view&gt;
+&lt;/view&gt;;</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总体来说，需求并不复杂，但由于第一次接触，也花费了一些时间。大部分时间都是在查找微信文档以及根据文档的内容来制定解决方案，果然还是带着需求的目的去学习是最快的，吹皮的资本又多了一个，哥也是搞过小程序的人～～～</p></div><hr><div><div class="post-metas mb-3"><div class="post-meta mr-3"><i class="iconfont icon-category"></i> <a class="hover-with-bg" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></div><div class="post-meta"><i class="iconfont icon-tags"></i> <a class="hover-with-bg" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/">小程序</a></div></div><p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p><div class="post-prevnext row"><article class="post-prev col-6"><a href="/2020/04/23/vue-%E5%8A%A8%E6%80%81%E8%AE%BE%E7%BD%AE%E9%A1%B5%E9%9D%A2%E6%A0%87%E9%A2%98%E9%82%A3%E7%82%B9%E5%84%BF%E4%BA%8B/"><i class="iconfont icon-arrowleft"></i> <span class="hidden-mobile">vue 动态设置页面标题那点儿事</span> <span class="visible-mobile">上一篇</span></a></article><article class="post-next col-6"> <a href="/2020/04/14/element-ui-vue-cropper-%E5%9B%BE%E7%89%87%E8%A3%81%E5%89%AA%E5%90%8E%E4%B8%8A%E4%BC%A0/"><span class="hidden-mobile">element-ui + vue-cropper 图片裁剪后上传</span> <span class="visible-mobile">下一篇</span><i class="iconfont icon-arrowright"></i></a></article></div></div></article></div></div></div><div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn"><div id="toc"><p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p><div id="tocbot"></div></div></div></div></div><div class="col-lg-7 mx-auto nopadding-md"><div class="container custom post-content mx-auto"> <img src="/images/wechatpay.jpg" srcset="/img/loading.gif" class="rounded mx-auto d-block mt-5" style="width:200px;height:271px"></div></div></main><a id="scroll-top-button" href="#" role="button"><i class="iconfont icon-arrowup" aria-hidden="true"></i></a><div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-lg" role="document"><div class="modal-content"><div class="modal-header text-center"><h4 class="modal-title w-100 font-weight-bold">搜索</h4> <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span></button></div><div class="modal-body mx-3"><div class="md-form mb-5"> <input type="text" id="local-search-input" class="form-control validate"> <label data-error="x" data-success="v" for="local-search-input">关键词</label></div><div class="list-group" id="local-search-result"></div></div></div></div></div><footer class="mt-5"><div class="text-center py-3"><div> <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a><i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a></div></div></footer><script src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script><script src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js"></script><script src="/js/debouncer.js"></script><script src="/js/main.js"></script><script src="/js/lazyload.js"></script><script defer="defer" src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js"></script><script src="/js/clipboard-use.js"></script><script src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js"></script><script>$(document).ready(function(){var t=$("#board-ctn").offset().top;tocbot.init({tocSelector:"#tocbot",contentSelector:"#post-body",headingSelector:"h1,h2,h3,h4,h5,h6",linkClass:"tocbot-link",activeLinkClass:"tocbot-active-link",listClass:"tocbot-list",isCollapsedClass:"tocbot-is-collapsed",collapsibleClass:"tocbot-is-collapsible",collapseDepth:0,scrollSmooth:!0,headingsOffset:-t}),0<$(".toc-list-item").length&&$("#toc").css("visibility","visible")})</script><script src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js"></script><script>var typed=new Typed("#subtitle",{strings:["  ","微信小程序之如何保存小程序码&nbsp;"],cursorChar:"_",typeSpeed:70,loop:!1});typed.stop(),$(document).ready(function(){$(".typed-cursor").addClass("h2"),typed.start()})</script><script src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js"></script><script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script><script src="/js/local-search.js"></script><script>var path="/local-search.xml",inputArea=document.querySelector("#local-search-input");inputArea.onclick=function(){searchFunc(path,"local-search-input","local-search-result"),this.onclick=null}</script><script src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js"></script><link rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css"><script>$("#post img:not(.no-zoom img, img[no-zoom]), img[zoom]").each(function(){var t=document.createElement("a");$(t).attr("data-fancybox","images"),$(t).attr("href",$(this).attr("src")),$(this).wrap(t)})</script><script src="https://cdn.jsdelivr.net/npm/live2d-widget@^3.1.3/lib/L2Dwidget.min.js"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,debug:!1,model:{scale:1,hHeadPos:.5,vHeadPos:.618,jsonPath:"/live2dw/assets/shizuku.model.json"},display:{superSample:2,width:125,height:125,position:"right",hOffset:30,vOffset:-20},mobile:{show:!1,scale:.05},react:{opacityDefault:1,opacityOnHover:.2},log:!1})</script></body></html>

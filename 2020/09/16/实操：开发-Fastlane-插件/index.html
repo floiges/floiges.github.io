@@ -1,0 +1,158 @@
+<!DOCTYPE html><html lang="zh-CN" data-default-color-scheme="&#34;auto&#34;"><head><meta charset="UTF-8"><link rel="apple-touch-icon" sizes="76x76" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" href="/images/favicon.ico"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="theme-color" content="#2f4154"><meta name="description" content="懂得越多，不懂得越多"><meta name="author" content="Raindew"><meta name="keywords" content="TechLife"><title>实操：开发 Fastlane 插件 - Raindew Tech</title><link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css"><link rel="stylesheet" href="/lib/hint/hint.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_pf9vaxs7x7b.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css"><link rel="stylesheet" href="/css/main.css"><script src="/js/utils.js"></script><script src="/js/color-schema.js"></script><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Raindew Tech" type="application/atom+xml"></head><body><header style="height:70vh"><nav id="navbar" class="navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar"><div class="container"> <a class="navbar-brand" href="/">&nbsp;<strong>Raindew Tech</strong>&nbsp;</a> <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><div class="animated-icon"><span></span><span></span><span></span></div></button><div class="collapse navbar-collapse" id="navbarSupportedContent"><ul class="navbar-nav ml-auto text-center"><li class="nav-item"><a class="nav-link" href="/"><i class="iconfont icon-home-fill"></i> 首页</a></li><li class="nav-item"><a class="nav-link" href="/archives/"><i class="iconfont icon-archive-fill"></i> 归档</a></li><li class="nav-item"><a class="nav-link" href="/categories/"><i class="iconfont icon-category-fill"></i> 分类</a></li><li class="nav-item"><a class="nav-link" href="/tags/"><i class="iconfont icon-tags-fill"></i> 标签</a></li><li class="nav-item"><a class="nav-link" href="/about/"><i class="iconfont icon-user-fill"></i> 关于</a></li><li class="nav-item"><a class="nav-link" href="/404/"><i class="iconfont icon-link-fill"></i> 404</a></li><li class="nav-item" id="search-btn"> <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i class="iconfont icon-search"></i>&nbsp;</a></li><li class="nav-item" id="color-toggle-btn"> <a class="nav-link" href="javascript:">&nbsp;<i class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a></li></ul></div></div></nav><div class="banner intro-2" id="background" parallax="true" style="background:url(/images/code_bg.png) no-repeat center center;background-size:cover"><div class="full-bg-img"><div class="mask flex-center" style="background-color:rgba(0,0,0,.3)"><div class="container page-header text-center fade-in-up"><span class="h2" id="subtitle"></span><div class="mt-3"><span class="post-meta mr-2"><i class="iconfont icon-author" aria-hidden="true"></i> Raindew</span><span class="post-meta"><i class="iconfont icon-date-fill" aria-hidden="true"></i> <time datetime="2020-09-16 18:19" pubdate>2020年9月16日 晚上</time></span></div><div class="mt-1"><span class="post-meta mr-2"><i class="iconfont icon-chart"></i> 1.2k 字</span><span class="post-meta mr-2"><i class="iconfont icon-clock-fill"></i> 17 分钟</span></div></div></div></div></div></header><main><div class="container-fluid"><div class="row"><div class="d-none d-lg-block col-lg-2"></div><div class="col-lg-8 nopadding-md"><div class="container nopadding-md" id="board-ctn"><div class="py-5" id="board"><article class="post-content mx-auto" id="post"><h1 style="display:none">实操：开发 Fastlane 插件</h1><p class="note note-info"> 本文最后更新于：2022年7月6日 上午</p><div class="markdown-body" id="post-body"><p>开始整活</p><a id="more"></a><blockquote><p>jenkins 打包机器坏了还没修，本地打包之后每次都要通知测试去下载测试包。太麻烦了，直接搞个插件，打包之后自动发送钉钉消息到群里吧</p></blockquote><h2 id="创建-gem-项目"><a href="#创建-gem-项目" class="headerlink" title="创建 gem 项目"></a>创建 gem 项目</h2><pre><code class="hljs shell">fastlane new_plugin ykz_dingding_notify</code></pre><p>创建好的项目目录如下：</p><pre><code class="hljs crystal">├── Gemfile
+├── Gemfile.lock
+├── LICENSE
+├── README.md
+├── Rakefile
+├── coverage
+├── fastlane
+│   ├── Fastfile
+│   ├── Pluginfile
+│   ├── README.md
+│   └── report.xml
+├── fastlane-plugin-ykz_upload_bugly.gemspec
+├── <span class="hljs-class"><span class="hljs-keyword">lib</span></span>
+│   └── fastlane
+│       └── plugin
+│           ├── ykz_upload_bugly
+│           │   ├── actions
+│           │   │   └── ykz_upload_bugly_action.rb
+│           │   ├── helper
+│           │   │   └── ykz_upload_bugly_helper.rb
+│           │   └── version.rb
+│           └── ykz_upload_bugly.rb
+├── spec</code></pre><p>其中需要重点关注下面2个文件(目录):</p><ul><li><p>fastlane-plugin-ykz_upload_bugly.gemspec</p><p>基础配置文件，如果我们有额外的三方依赖的话，可以在这里进行配置，这次没有改动次文件</p></li><li><p>lib 目录</p><p>是我们需要重点关注的目录，我们主要的工作就是在 actions/ykz_upload_bugly_action.rb 中</p><p>编写主要的代码逻辑，例如处理参数、调用钉钉通知、处理返回结果等。</p><p>其中，helper/ykz_upload_bugly_helper.rb 中可以定义一些工具方法，versions.rb 则是配置此插件的版本号。</p></li></ul><h2 id="Fastlane-Action"><a href="#Fastlane-Action" class="headerlink" title="Fastlane Action"></a>Fastlane Action</h2><p>actions/ykz_upload_bugly_action.rb 文件内容如下：</p><pre><code class="hljs ruby"><span class="hljs-keyword">require</span> <span class="hljs-string">&#x27;fastlane/action&#x27;</span>
+require_relative <span class="hljs-string">&#x27;../helper/ykz_dingding_notify_helper&#x27;</span>
+
+<span class="hljs-class"><span class="hljs-keyword">module</span> <span class="hljs-title">Fastlane</span></span>
+  <span class="hljs-class"><span class="hljs-keyword">module</span> <span class="hljs-title">Actions</span></span>
+    <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">YkzDingdingNotifyAction</span> &lt; Action</span>
+      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">run</span><span class="hljs-params">(params)</span></span>
+        <span class="hljs-comment"># 处理核心逻辑的地方</span>
+        <span class="hljs-comment"># 处理参数、调用接口、处理返回</span>
+      <span class="hljs-keyword">end</span>
+
+      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">description</span></span>
+        <span class="hljs-string">&quot;notify after app build&quot;</span>
+      <span class="hljs-keyword">end</span>
+
+      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">authors</span></span>
+        [<span class="hljs-string">&quot;yadong&quot;</span>]
+      <span class="hljs-keyword">end</span>
+
+      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">return_value</span></span>
+        <span class="hljs-comment"># If your method provides a return value, you can describe here what it does</span>
+      <span class="hljs-keyword">end</span>
+
+      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">details</span></span>
+        <span class="hljs-comment"># Optional:</span>
+        <span class="hljs-string">&quot;notify after app build&quot;</span>
+      <span class="hljs-keyword">end</span>
+
+      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">available_options</span></span>
+      	<span class="hljs-comment"># 一般来说，我们肯定是需要接受外部传递参数的，这时就需要在此定义需要接收哪些参数</span>
+        <span class="hljs-comment"># 返回值为一个 FastlaneCore::ConfigItem 类型的数组</span>
+      <span class="hljs-keyword">end</span>
+
+      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">is_supported?</span><span class="hljs-params">(platform)</span></span>
+        <span class="hljs-comment"># Adjust this if your plugin only works for a particular platform (iOS vs. Android, for example)</span>
+        <span class="hljs-comment"># See: https://docs.fastlane.tools/advanced/#control-configuration-by-lane-and-by-platform</span>
+        <span class="hljs-comment">#</span>
+        [<span class="hljs-symbol">:ios</span>, <span class="hljs-symbol">:mac</span>].<span class="hljs-keyword">include</span>?(platform)
+        <span class="hljs-literal">true</span>
+      <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span></code></pre><p>我们先来想一下钉钉通知插件需要什么参数吧，最简单来说，我们需要如下2个参数：</p><ul><li>access_token: 钉钉机器人发送消息，这个是必备的了</li><li>message: 简单点，我们只处理 text 类型消息，那么我们就再额外传递一个消息内容就 OK 了</li></ul><p>首先我们来写 <code>self.available_options</code> 方法，编辑我们需要接收的参数：</p><pre><code class="hljs ruby"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">available_options</span></span>
+  [
+    FastlaneCore::ConfigItem.new(<span class="hljs-symbol">key:</span> <span class="hljs-symbol">:access_token</span>,
+                            <span class="hljs-symbol">env_name:</span> <span class="hljs-string">&quot;YKZ_DINGDING_NOTIFY_ACCESS_TOKEN&quot;</span>,
+                         <span class="hljs-symbol">description:</span> <span class="hljs-string">&quot;dingding access_token&quot;</span>,
+                            <span class="hljs-symbol">optional:</span> <span class="hljs-literal">false</span>,
+                                <span class="hljs-symbol">type:</span> String),
+    FastlaneCore::ConfigItem.new(<span class="hljs-symbol">key:</span> <span class="hljs-symbol">:message</span>,
+                            <span class="hljs-symbol">env_name:</span> <span class="hljs-string">&quot;YKZ_DINGDING_NOTIFY_MESSAGE&quot;</span>,
+                         <span class="hljs-symbol">description:</span> <span class="hljs-string">&quot;message if needed&quot;</span>,
+                            <span class="hljs-symbol">optional:</span> <span class="hljs-literal">false</span>,
+                                <span class="hljs-symbol">type:</span> String)
+  ]
+<span class="hljs-keyword">end</span></code></pre><p>参数定义好了，可以写核心的逻辑了。其实核心的逻辑相当简单，利用接收到的参数，拼接好 <code>curl</code> 请求然后调用并处理返回结果就行了。我们先看一下官方文档的钉钉通知 <code>curl 请求</code>:</p><pre><code class="hljs shell">curl &#x27;https://oapi.dingtalk.com/robot/send?access_token=your_access_token&#x27; \
+   -H &#x27;Content-Type: application/json&#x27; \
+   -d &#x27;&#123;&quot;msgtype&quot;: &quot;text&quot;,&quot;text&quot;: &#123;&quot;content&quot;: &quot;我就是我, 是不一样的烟火&quot;&#125;&#125;&#x27;</code></pre><p>我们只要替换到请求中的 <code>access_token</code> 和 <code>content</code> 两个地方就可以达到我们的目的。</p><p>继续写 <code>self.run</code>方法：</p><pre><code class="hljs ruby"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">self</span>.<span class="hljs-title">run</span><span class="hljs-params">(params)</span></span>
+  <span class="hljs-keyword">require</span> <span class="hljs-string">&#x27;json&#x27;</span>
+
+  UI.message(<span class="hljs-string">&quot;start notify dingding...&quot;</span>)
+
+  <span class="hljs-comment"># 处理 curl 返回，返回结果会被存储到 json_file 中</span>
+  json_file = <span class="hljs-string">&#x27;notify_dingding_result.json&#x27;</span>
+
+  <span class="hljs-comment"># 获取 access_token</span>
+  <span class="hljs-keyword">begin</span>
+    access_token = <span class="hljs-string">&#x27;&#x27;</span>
+    <span class="hljs-keyword">unless</span> params[<span class="hljs-symbol">:access_token</span>].empty?
+      access_token = params[<span class="hljs-symbol">:access_token</span>]
+      UI.message(<span class="hljs-string">&quot;access_token: <span class="hljs-subst">#&#123;access_token&#125;</span>&quot;</span>)
+    <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">rescue</span> =&gt; exception
+    UI.message(<span class="hljs-string">&quot;error at checking access_token, caused by <span class="hljs-subst">#&#123;exception&#125;</span>&quot;</span>)
+    <span class="hljs-keyword">return</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-comment"># 获取 message</span>
+  <span class="hljs-keyword">begin</span>
+    message = <span class="hljs-string">&#x27;&#x27;</span>
+    <span class="hljs-keyword">unless</span> params[<span class="hljs-symbol">:message</span>].empty?
+      message = params[<span class="hljs-symbol">:message</span>]
+    <span class="hljs-keyword">end</span>
+  <span class="hljs-keyword">rescue</span> =&gt; exception
+    UI.message(<span class="hljs-string">&quot;error at checking message, caused by <span class="hljs-subst">#&#123;exception&#125;</span>&quot;</span>)
+    <span class="hljs-keyword">return</span>
+  <span class="hljs-keyword">end</span>
+
+  <span class="hljs-comment"># 拼接 curl</span>
+  cmd = &lt;&lt;-DESC
+    curl <span class="hljs-string">&#x27;https://oapi.dingtalk.com/robot/send?access_token=<span class="hljs-subst">#&#123;access_token&#125;</span>&#x27;</span> \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    -d <span class="hljs-string">&#x27;&#123;&quot;msgtype&quot;: &quot;text&quot;,&quot;text&quot;: &#123;&quot;content&quot;: &quot;<span class="hljs-subst">#&#123;message&#125;</span>&quot;&#125;&#125;&#x27;</span> \
+    -o <span class="hljs-comment">#&#123;json_file&#125;</span>
+  DESC
+
+  <span class="hljs-comment"># 调用 curl 执行请求</span>
+  sh(cmd)
+	<span class="hljs-comment"># 处理返回结果</span>
+  obj = JSON.parse(File.read(json_file))
+  ret = obj[<span class="hljs-string">&#x27;errcode&#x27;</span>]
+  <span class="hljs-keyword">if</span> ret == <span class="hljs-number">0</span>
+    UI.message(<span class="hljs-string">&quot;notify dingding successfully&quot;</span>)
+  <span class="hljs-keyword">else</span>
+    UI.message(<span class="hljs-string">&quot;notify dingding failed, result is <span class="hljs-subst">#&#123;obj&#125;</span>&quot;</span>)
+  <span class="hljs-keyword">end</span>
+	<span class="hljs-comment"># 最后删除 json 文件，避免占用空间</span>
+  <span class="hljs-string">`rm notify_dingding_result.json`</span>
+<span class="hljs-keyword">end</span></code></pre><h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>最主要的逻辑写完了，我们想要测试一下。我们在项目内 <code>fastlane/Fastfile</code> 文件中编写我们的测试逻辑：</p><pre><code class="hljs ruby">lane <span class="hljs-symbol">:test</span> <span class="hljs-keyword">do</span>
+  ykz_dingding_notify(
+    <span class="hljs-symbol">access_token:</span> <span class="hljs-string">&#x27;xxxxx&#x27;</span>,
+    <span class="hljs-symbol">message:</span> <span class="hljs-string">&#x27;构建：哈哈哈哈哈&#x27;</span>,
+  )
+<span class="hljs-keyword">end</span></code></pre><p>然后命令行进入我们项目目录，执行：</p><pre><code class="hljs shell">fastlane test
+<span class="hljs-meta">#</span><span class="bash"> 由于我这里用了 bundle，因此我执行了 bundle <span class="hljs-built_in">exec</span> fastlane <span class="hljs-built_in">test</span></span></code></pre><h2 id="iOS-工程里使用插件"><a href="#iOS-工程里使用插件" class="headerlink" title="iOS 工程里使用插件"></a>iOS 工程里使用插件</h2><p>我们把插件项目上传到 git 仓库中，然后打开 iOS 项目中的 fastlane/Pluginfile 文件：</p><pre><code class="hljs ruby">gem <span class="hljs-string">&#x27;fastlane-plugin-ykz_dingding_notify&#x27;</span>, <span class="hljs-symbol">git:</span> <span class="hljs-string">&#x27;your plugin git&#x27;</span></code></pre><p>然后再安装我们的插件信息：</p><pre><code class="hljs mipsasm">fastlane <span class="hljs-keyword">install_plugins</span>
+<span class="hljs-keyword"># </span>由于我用了 <span class="hljs-keyword">bundle，因此我这里执行 </span><span class="hljs-keyword">bundle </span><span class="hljs-keyword">install </span>和 <span class="hljs-keyword">bundle </span>exec fastlane <span class="hljs-keyword">install_plugins</span></code></pre><p>现在，我们可以在我们的 <code>lane</code> 中使用通知插件了：</p><pre><code class="hljs ruby">desc <span class="hljs-string">&quot;ad-hoc&quot;</span>
+lane <span class="hljs-symbol">:adhoc</span> <span class="hljs-keyword">do</span> <span class="hljs-params">|options|</span>
+	...
+  ...
+  ykz_dingding_notify(
+    <span class="hljs-symbol">access_token:</span> <span class="hljs-string">&#x27;xxxx&#x27;</span>,
+    <span class="hljs-symbol">message:</span> <span class="hljs-string">&#x27;构建通知：老铁们，打包成功了啊&#x27;</span>,
+  )
+<span class="hljs-keyword">end</span></code></pre><p>喜大普奔!!!!</p></div><hr><div><div class="post-metas mb-3"><div class="post-meta mr-3"><i class="iconfont icon-category"></i> <a class="hover-with-bg" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a></div><div class="post-meta"><i class="iconfont icon-tags"></i> <a class="hover-with-bg" href="/tags/Fastlane/">Fastlane</a></div></div><p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p><div class="post-prevnext row"><article class="post-prev col-6"><a href="/2022/07/06/WebAssembly-%E5%85%A5%E9%97%A8/"><i class="iconfont icon-arrowleft"></i> <span class="hidden-mobile">WebAssembly 入门</span> <span class="visible-mobile">上一篇</span></a></article><article class="post-next col-6"> <a href="/2020/04/24/%E5%AD%A6%E4%BA%86-gulp-%E6%83%B3%E7%BB%83%E7%BB%83%E6%89%8B%EF%BC%9F%E6%AD%A3%E5%A5%BD%E5%8E%8B%E7%BC%A9%E4%B8%8B%E4%BD%A0%E7%9A%84%E5%8D%9A%E5%AE%A2/"><span class="hidden-mobile">学了 gulp 想练练手？正好压缩下你的博客</span> <span class="visible-mobile">下一篇</span><i class="iconfont icon-arrowright"></i></a></article></div></div></article></div></div></div><div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn"><div id="toc"><p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p><div id="tocbot"></div></div></div></div></div><div class="col-lg-7 mx-auto nopadding-md"><div class="container custom post-content mx-auto"> <img src="/images/wechatpay.jpg" srcset="/img/loading.gif" class="rounded mx-auto d-block mt-5" style="width:200px;height:271px"></div></div></main><a id="scroll-top-button" href="#" role="button"><i class="iconfont icon-arrowup" aria-hidden="true"></i></a><div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-lg" role="document"><div class="modal-content"><div class="modal-header text-center"><h4 class="modal-title w-100 font-weight-bold">搜索</h4> <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span></button></div><div class="modal-body mx-3"><div class="md-form mb-5"> <input type="text" id="local-search-input" class="form-control validate"> <label data-error="x" data-success="v" for="local-search-input">关键词</label></div><div class="list-group" id="local-search-result"></div></div></div></div></div><footer class="mt-5"><div class="text-center py-3"><div> <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a><i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a></div></div></footer><script src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script><script src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js"></script><script src="/js/debouncer.js"></script><script src="/js/main.js"></script><script src="/js/lazyload.js"></script><script defer="defer" src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js"></script><script src="/js/clipboard-use.js"></script><script src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js"></script><script>$(document).ready(function(){var t=$("#board-ctn").offset().top;tocbot.init({tocSelector:"#tocbot",contentSelector:"#post-body",headingSelector:"h1,h2,h3,h4,h5,h6",linkClass:"tocbot-link",activeLinkClass:"tocbot-active-link",listClass:"tocbot-list",isCollapsedClass:"tocbot-is-collapsed",collapsibleClass:"tocbot-is-collapsible",collapseDepth:0,scrollSmooth:!0,headingsOffset:-t}),0<$(".toc-list-item").length&&$("#toc").css("visibility","visible")})</script><script src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js"></script><script>var typed=new Typed("#subtitle",{strings:["  ","实操：开发 Fastlane 插件&nbsp;"],cursorChar:"_",typeSpeed:70,loop:!1});typed.stop(),$(document).ready(function(){$(".typed-cursor").addClass("h2"),typed.start()})</script><script src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js"></script><script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script><script src="/js/local-search.js"></script><script>var path="/local-search.xml",inputArea=document.querySelector("#local-search-input");inputArea.onclick=function(){searchFunc(path,"local-search-input","local-search-result"),this.onclick=null}</script><script src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js"></script><link rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css"><script>$("#post img:not(.no-zoom img, img[no-zoom]), img[zoom]").each(function(){var t=document.createElement("a");$(t).attr("data-fancybox","images"),$(t).attr("href",$(this).attr("src")),$(this).wrap(t)})</script><script src="https://cdn.jsdelivr.net/npm/live2d-widget@^3.1.3/lib/L2Dwidget.min.js"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,debug:!1,model:{scale:1,hHeadPos:.5,vHeadPos:.618,jsonPath:"/live2dw/assets/shizuku.model.json"},display:{superSample:2,width:125,height:125,position:"right",hOffset:30,vOffset:-20},mobile:{show:!1,scale:.05},react:{opacityDefault:1,opacityOnHover:.2},log:!1})</script></body></html>

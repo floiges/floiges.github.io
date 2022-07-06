@@ -1,0 +1,112 @@
+<!DOCTYPE html><html lang="zh-CN" data-default-color-scheme="&#34;auto&#34;"><head><meta charset="UTF-8"><link rel="apple-touch-icon" sizes="76x76" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" href="/images/favicon.ico"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="theme-color" content="#2f4154"><meta name="description" content="懂得越多，不懂得越多"><meta name="author" content="Raindew"><meta name="keywords" content="TechLife"><title>学了 gulp 想练练手？正好压缩下你的博客 - Raindew Tech</title><link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css"><link rel="stylesheet" href="/lib/hint/hint.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_pf9vaxs7x7b.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css"><link rel="stylesheet" href="/css/main.css"><script src="/js/utils.js"></script><script src="/js/color-schema.js"></script><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Raindew Tech" type="application/atom+xml"></head><body><header style="height:70vh"><nav id="navbar" class="navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar"><div class="container"> <a class="navbar-brand" href="/">&nbsp;<strong>Raindew Tech</strong>&nbsp;</a> <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><div class="animated-icon"><span></span><span></span><span></span></div></button><div class="collapse navbar-collapse" id="navbarSupportedContent"><ul class="navbar-nav ml-auto text-center"><li class="nav-item"><a class="nav-link" href="/"><i class="iconfont icon-home-fill"></i> 首页</a></li><li class="nav-item"><a class="nav-link" href="/archives/"><i class="iconfont icon-archive-fill"></i> 归档</a></li><li class="nav-item"><a class="nav-link" href="/categories/"><i class="iconfont icon-category-fill"></i> 分类</a></li><li class="nav-item"><a class="nav-link" href="/tags/"><i class="iconfont icon-tags-fill"></i> 标签</a></li><li class="nav-item"><a class="nav-link" href="/about/"><i class="iconfont icon-user-fill"></i> 关于</a></li><li class="nav-item"><a class="nav-link" href="/404/"><i class="iconfont icon-link-fill"></i> 404</a></li><li class="nav-item" id="search-btn"> <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i class="iconfont icon-search"></i>&nbsp;</a></li><li class="nav-item" id="color-toggle-btn"> <a class="nav-link" href="javascript:">&nbsp;<i class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a></li></ul></div></div></nav><div class="banner intro-2" id="background" parallax="true" style="background:url(/images/code_bg.png) no-repeat center center;background-size:cover"><div class="full-bg-img"><div class="mask flex-center" style="background-color:rgba(0,0,0,.3)"><div class="container page-header text-center fade-in-up"><span class="h2" id="subtitle"></span><div class="mt-3"><span class="post-meta mr-2"><i class="iconfont icon-author" aria-hidden="true"></i> Raindew</span><span class="post-meta"><i class="iconfont icon-date-fill" aria-hidden="true"></i> <time datetime="2020-04-24 13:57" pubdate>2020年4月24日 下午</time></span></div><div class="mt-1"><span class="post-meta mr-2"><i class="iconfont icon-chart"></i> 964 字</span><span class="post-meta mr-2"><i class="iconfont icon-clock-fill"></i> 13 分钟</span></div></div></div></div></div></header><main><div class="container-fluid"><div class="row"><div class="d-none d-lg-block col-lg-2"></div><div class="col-lg-8 nopadding-md"><div class="container nopadding-md" id="board-ctn"><div class="py-5" id="board"><article class="post-content mx-auto" id="post"><h1 style="display:none">学了 gulp 想练练手？正好压缩下你的博客</h1><p class="note note-info"> 本文最后更新于：2022年7月6日 上午</p><div class="markdown-body" id="post-body"><p>用自动化构建工具增强你的工作流程！</p><a id="more"></a><h2 id="Update"><a href="#Update" class="headerlink" title="Update"></a>Update</h2><p>最近升级 hexo，顺带也升级了 gulp 的依赖，运行 gulp 之后，报 <code>GulpUglifyError: unable to minify JavaScript Caused by: SyntaxError: Unexpected token: punc «)»</code> 错误，其实还是依赖没搞对， gulp-uglify 不识别 es6 的问题，想着博客项目也不考虑什么兼容性了，果断换插件。</p><p>先删除多余的插件:</p><pre><code class="hljs livescript"><span class="hljs-built_in">npm</span> uninstall<span class="hljs-string">\</span>
+ gulp-babel@<span class="hljs-number">7</span><span class="hljs-string">\</span>
+ babel-core<span class="hljs-string">\</span>
+ babel-preset-env<span class="hljs-string">\</span>
+ babel-preset-es2015<span class="hljs-string">\</span></code></pre><p>之后安装 <code>gulp-uglify-es</code>，它使用 <code>Terser</code> 压缩代码(支持 es6)，非常人性化:</p><pre><code class="hljs q">npm install gulp-uglify-es --<span class="hljs-built_in">save</span>-<span class="hljs-built_in">dev</span></code></pre><p>最后<code>gulpfile</code> 里面这样改：</p><pre><code class="hljs javascript">......
+<span class="hljs-keyword">const</span> uglify = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-uglify-es&#x27;</span>).default; <span class="hljs-comment">// 引用 gulp-uglify-es</span>
+......
+
+<span class="hljs-comment">// 压缩 js</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">minifyJS</span>(<span class="hljs-params"></span>) </span>&#123;
+	<span class="hljs-keyword">return</span> gulp
+		.src(<span class="hljs-string">&#x27;./public/js/**/*.js&#x27;</span>)
+		.pipe(uglify()) <span class="hljs-comment">// 直接压缩即可</span>
+		.pipe(gulp.dest(<span class="hljs-string">&#x27;./public&#x27;</span>));
+&#125;
+......
+......</code></pre><p>———————— 以下为原文 ————————</p><h2 id="一些关于-Gulp的基础概念"><a href="#一些关于-Gulp的基础概念" class="headerlink" title="一些关于 Gulp的基础概念"></a>一些关于 <code>Gulp</code>的基础概念</h2><h3 id="任务"><a href="#任务" class="headerlink" title="任务"></a>任务</h3><p>首选要明确的一点是，<code>gulp</code> 中的每个任务都是一个 <code>javascript</code> 异步函数。处理异步任务，最基础也最常用的就是 <code>error-first callbacks</code> , 但是 <code>gulp</code> 也支持流、<code>promises</code>、<code>async/await</code> 等等其他异步方式，根据自己的需要进行选择即可，我们这里选用的就是返回流的方式。</p><h3 id="Globs"><a href="#Globs" class="headerlink" title="Globs"></a>Globs</h3><p>代表一串文字和/或通配符，如 <code>*</code>, <code>**</code>, 或 <code>!</code>，用于匹配文件路径。例如： <code>./public/js/**.js</code> 代表匹配当前 <code>public/js</code> 目录下的所有 <code>js</code>文件。</p><h3 id="插件"><a href="#插件" class="headerlink" title="插件"></a>插件</h3><blockquote><p>Gulp 插件实质上是 <a target="_blank" rel="noopener" href="https://github.com/rvagg/through2">Node 转换流（Transform Streams）</a>，它封装了通过管道（pipeline）转换文件的常见功能，通常是使用 <code>.pipe()</code> 方法并放在 <code>src()</code> 和 <code>dest()</code> 之间。他们可以更改经过流（stream）的每个文件的文件名、元数据或文件内容。</p></blockquote><p>插件是用来转换文件的，可以简化我们的操作，让我们快速上手。我们这次也是使用了很多的插件，比如压缩文件、压缩图片等 <code>gulp</code> 插件。</p><h2 id="实操"><a href="#实操" class="headerlink" title="实操"></a>实操</h2><p>引入依赖:</p><pre><code class="hljs bash">npm install\
+ gulp gulp-minify-css\
+ gulp-uglify\
+ gulp-htmlmin\
+ gulp-htmlclean\
+ gulp-imagemin\
+ --save-dev</code></pre><p>这里面遇到个问题，因为 <code>gulp-uglify</code> 压缩 <code>js</code> 文件的时候，遇见 ES6 语法会报错，因此我们还需要引入下 <code>babel</code> 的插件，先转换下语法再压缩文件：</p><pre><code class="hljs bash">npm install\
+ gulp-babel@7\
+ babel-core\
+ babel-preset-env\
+ babel-preset-es2015\
+ --save-dev</code></pre><p>运行 <code>hexo g</code> 之后，会生成可发布的 <code>public</code> 文件夹，因为我们的 <code>gulp</code> 任务，都是基于此文件夹操作的。</p><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> gulp = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp&#x27;</span>);
+<span class="hljs-keyword">const</span> minifycss = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-minify-css&#x27;</span>);
+<span class="hljs-keyword">const</span> uglify = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-uglify&#x27;</span>);
+<span class="hljs-keyword">const</span> htmlmin = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-htmlmin&#x27;</span>);
+<span class="hljs-keyword">const</span> htmlclean = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-htmlclean&#x27;</span>);
+<span class="hljs-keyword">const</span> imagemin = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-imagemin&#x27;</span>);
+<span class="hljs-keyword">const</span> babel = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;gulp-babel&#x27;</span>);
+
+<span class="hljs-comment">// 压缩 js</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">minifyJS</span>(<span class="hljs-params"></span>) </span>&#123;
+	<span class="hljs-keyword">return</span> gulp
+		.src(<span class="hljs-string">&#x27;./public/js/**/*.js&#x27;</span>)
+		.pipe(babel(&#123; <span class="hljs-attr">presets</span>: [<span class="hljs-string">&#x27;es2015&#x27;</span>] &#125;)) <span class="hljs-comment">// 先转换语法</span>
+		.pipe(uglify())
+		.pipe(gulp.dest(<span class="hljs-string">&#x27;./public&#x27;</span>));
+&#125;
+
+<span class="hljs-comment">// 压缩html</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">minifyHTML</span>(<span class="hljs-params"></span>) </span>&#123;
+	<span class="hljs-keyword">return</span> gulp
+		.src(<span class="hljs-string">&#x27;./public/**/*.html&#x27;</span>)
+		.pipe(htmlclean())
+		.pipe(
+			htmlmin(&#123;
+				removeComments: <span class="hljs-literal">true</span>,
+				minifyJS: <span class="hljs-literal">true</span>,
+				minifyCSS: <span class="hljs-literal">true</span>,
+				minifyURLs: <span class="hljs-literal">true</span>,
+			&#125;),
+		)
+		.pipe(gulp.dest(<span class="hljs-string">&#x27;./public&#x27;</span>));
+&#125;
+
+<span class="hljs-comment">// 压缩css</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">minifyCSS</span>(<span class="hljs-params"></span>) </span>&#123;
+	<span class="hljs-keyword">return</span> gulp
+		.src(<span class="hljs-string">&#x27;./public/**/*.css&#x27;</span>)
+		.pipe(
+			minifycss(&#123;
+				compatibility: <span class="hljs-string">&#x27;ie8&#x27;</span>,
+			&#125;),
+		)
+		.pipe(gulp.dest(<span class="hljs-string">&#x27;./public&#x27;</span>));
+&#125;
+
+<span class="hljs-comment">// 压缩图片</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">minifyIMG</span>(<span class="hljs-params"></span>) </span>&#123;
+	<span class="hljs-keyword">return</span> gulp
+		.src(<span class="hljs-string">&#x27;./public/images/**/*.*&#x27;</span>)
+		.pipe(
+			imagemin(
+				[
+					imagemin.gifsicle(&#123; <span class="hljs-attr">optimizationLevel</span>: <span class="hljs-number">3</span> &#125;),
+					imagemin.mozjpeg(&#123; <span class="hljs-attr">progressive</span>: <span class="hljs-literal">true</span> &#125;),
+					imagemin.optipng(&#123; <span class="hljs-attr">optimizationLevel</span>: <span class="hljs-number">7</span> &#125;),
+					imagemin.svgo(),
+				],
+				&#123; <span class="hljs-attr">verbose</span>: <span class="hljs-literal">true</span> &#125;,
+			),
+		)
+		.pipe(gulp.dest(<span class="hljs-string">&#x27;./public/images&#x27;</span>));
+&#125;
+
+<span class="hljs-comment">// 导出默认任务，这样命令行下输入 gulp 即可运行</span>
+<span class="hljs-built_in">exports</span>.default = gulp.series(minifyJS, minifyHTML, minifyCSS, minifyIMG);</code></pre><p>接下啦，我们命令行下运行 <code>hexo g &amp;&amp; gulp</code> 即可打包并压缩我们的文件了。</p><h2 id="结合自动化"><a href="#结合自动化" class="headerlink" title="结合自动化"></a>结合自动化</h2><p>我在之前的文章<a href="/2020/02/18/%E4%BD%BF%E7%94%A8-github-action-%E5%8F%91%E5%B8%83-hexo/" title="使用 github action 发布 hexo">使用 github action 发布 hexo</a>中，介绍过使用 <code>github action</code>来发布我们的博客，现在只要在<code>action</code>的基础上加上 <code>gulp</code>任务就 ok 了。这样就达到了，博客项目推送<code>master</code>分支，触发 <code>github action</code>，打包压缩之后，上传至 <code>github pages</code>项目，完美。</p><pre><code class="hljs yaml"><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Install</span> <span class="hljs-string">dependencies</span>
+  <span class="hljs-attr">run:</span> <span class="hljs-string">|</span>
+    <span class="hljs-string">npm</span> <span class="hljs-string">i</span> <span class="hljs-string">-g</span> <span class="hljs-string">hexo-cli</span> <span class="hljs-string">gulp</span>
+    <span class="hljs-string">npm</span> <span class="hljs-string">i</span>
+
+<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Deploy</span> <span class="hljs-string">hexo</span>
+  <span class="hljs-attr">run:</span> <span class="hljs-string">|</span>
+    <span class="hljs-string">hexo</span> <span class="hljs-string">clean</span>
+    <span class="hljs-string">hexo</span> <span class="hljs-string">g</span> <span class="hljs-string">&amp;&amp;</span> <span class="hljs-string">gulp</span> <span class="hljs-string">&amp;&amp;</span> <span class="hljs-string">hexo</span> <span class="hljs-string">deploy</span></code></pre></div><hr><div><div class="post-metas mb-3"><div class="post-meta mr-3"><i class="iconfont icon-category"></i> <a class="hover-with-bg" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a></div><div class="post-meta"><i class="iconfont icon-tags"></i> <a class="hover-with-bg" href="/tags/hexo/">hexo</a></div></div><p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p><div class="post-prevnext row"><article class="post-prev col-6"><a href="/2020/09/16/%E5%AE%9E%E6%93%8D%EF%BC%9A%E5%BC%80%E5%8F%91-Fastlane-%E6%8F%92%E4%BB%B6/"><i class="iconfont icon-arrowleft"></i> <span class="hidden-mobile">实操：开发 Fastlane 插件</span> <span class="visible-mobile">上一篇</span></a></article><article class="post-next col-6"> <a href="/2020/04/23/%E6%9D%A5%E4%BA%86%EF%BC%8C%E5%89%8D%E7%AB%AF%E4%B8%80%E9%94%AE%E4%B8%8B%E8%BD%BD%E5%8E%8B%E7%BC%A9%E5%8C%85/"><span class="hidden-mobile">来了，前端一键下载压缩包</span> <span class="visible-mobile">下一篇</span><i class="iconfont icon-arrowright"></i></a></article></div></div></article></div></div></div><div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn"><div id="toc"><p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p><div id="tocbot"></div></div></div></div></div><div class="col-lg-7 mx-auto nopadding-md"><div class="container custom post-content mx-auto"> <img src="/images/wechatpay.jpg" srcset="/img/loading.gif" class="rounded mx-auto d-block mt-5" style="width:200px;height:271px"></div></div></main><a id="scroll-top-button" href="#" role="button"><i class="iconfont icon-arrowup" aria-hidden="true"></i></a><div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-lg" role="document"><div class="modal-content"><div class="modal-header text-center"><h4 class="modal-title w-100 font-weight-bold">搜索</h4> <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span></button></div><div class="modal-body mx-3"><div class="md-form mb-5"> <input type="text" id="local-search-input" class="form-control validate"> <label data-error="x" data-success="v" for="local-search-input">关键词</label></div><div class="list-group" id="local-search-result"></div></div></div></div></div><footer class="mt-5"><div class="text-center py-3"><div> <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a><i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a></div></div></footer><script src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script><script src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js"></script><script src="/js/debouncer.js"></script><script src="/js/main.js"></script><script src="/js/lazyload.js"></script><script defer="defer" src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js"></script><script src="/js/clipboard-use.js"></script><script src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js"></script><script>$(document).ready(function(){var t=$("#board-ctn").offset().top;tocbot.init({tocSelector:"#tocbot",contentSelector:"#post-body",headingSelector:"h1,h2,h3,h4,h5,h6",linkClass:"tocbot-link",activeLinkClass:"tocbot-active-link",listClass:"tocbot-list",isCollapsedClass:"tocbot-is-collapsed",collapsibleClass:"tocbot-is-collapsible",collapseDepth:0,scrollSmooth:!0,headingsOffset:-t}),0<$(".toc-list-item").length&&$("#toc").css("visibility","visible")})</script><script src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js"></script><script>var typed=new Typed("#subtitle",{strings:["  ","学了 gulp 想练练手？正好压缩下你的博客&nbsp;"],cursorChar:"_",typeSpeed:70,loop:!1});typed.stop(),$(document).ready(function(){$(".typed-cursor").addClass("h2"),typed.start()})</script><script src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js"></script><script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script><script src="/js/local-search.js"></script><script>var path="/local-search.xml",inputArea=document.querySelector("#local-search-input");inputArea.onclick=function(){searchFunc(path,"local-search-input","local-search-result"),this.onclick=null}</script><script src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js"></script><link rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css"><script>$("#post img:not(.no-zoom img, img[no-zoom]), img[zoom]").each(function(){var t=document.createElement("a");$(t).attr("data-fancybox","images"),$(t).attr("href",$(this).attr("src")),$(this).wrap(t)})</script><script src="https://cdn.jsdelivr.net/npm/live2d-widget@^3.1.3/lib/L2Dwidget.min.js"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,debug:!1,model:{scale:1,hHeadPos:.5,vHeadPos:.618,jsonPath:"/live2dw/assets/shizuku.model.json"},display:{superSample:2,width:125,height:125,position:"right",hOffset:30,vOffset:-20},mobile:{show:!1,scale:.05},react:{opacityDefault:1,opacityOnHover:.2},log:!1})</script></body></html>

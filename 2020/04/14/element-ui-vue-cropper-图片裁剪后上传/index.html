@@ -1,0 +1,412 @@
+<!DOCTYPE html><html lang="zh-CN" data-default-color-scheme="&#34;auto&#34;"><head><meta charset="UTF-8"><link rel="apple-touch-icon" sizes="76x76" href="/images/apple-touch-icon-next.png"><link rel="icon" type="image/png" href="/images/favicon.ico"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no"><meta http-equiv="x-ua-compatible" content="ie=edge"><meta name="theme-color" content="#2f4154"><meta name="description" content="懂得越多，不懂得越多"><meta name="author" content="Raindew"><meta name="keywords" content="TechLife"><title>element-ui + vue-cropper 图片裁剪后上传 - Raindew Tech</title><link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css"><link rel="stylesheet" href="/lib/hint/hint.min.css"><link rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_pf9vaxs7x7b.css"><link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css"><link rel="stylesheet" href="/css/main.css"><script src="/js/utils.js"></script><script src="/js/color-schema.js"></script><meta name="generator" content="Hexo 5.1.1"><link rel="alternate" href="/atom.xml" title="Raindew Tech" type="application/atom+xml"></head><body><header style="height:70vh"><nav id="navbar" class="navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar"><div class="container"> <a class="navbar-brand" href="/">&nbsp;<strong>Raindew Tech</strong>&nbsp;</a> <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><div class="animated-icon"><span></span><span></span><span></span></div></button><div class="collapse navbar-collapse" id="navbarSupportedContent"><ul class="navbar-nav ml-auto text-center"><li class="nav-item"><a class="nav-link" href="/"><i class="iconfont icon-home-fill"></i> 首页</a></li><li class="nav-item"><a class="nav-link" href="/archives/"><i class="iconfont icon-archive-fill"></i> 归档</a></li><li class="nav-item"><a class="nav-link" href="/categories/"><i class="iconfont icon-category-fill"></i> 分类</a></li><li class="nav-item"><a class="nav-link" href="/tags/"><i class="iconfont icon-tags-fill"></i> 标签</a></li><li class="nav-item"><a class="nav-link" href="/about/"><i class="iconfont icon-user-fill"></i> 关于</a></li><li class="nav-item"><a class="nav-link" href="/404/"><i class="iconfont icon-link-fill"></i> 404</a></li><li class="nav-item" id="search-btn"> <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;<i class="iconfont icon-search"></i>&nbsp;</a></li><li class="nav-item" id="color-toggle-btn"> <a class="nav-link" href="javascript:">&nbsp;<i class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a></li></ul></div></div></nav><div class="banner intro-2" id="background" parallax="true" style="background:url(/images/code_bg.png) no-repeat center center;background-size:cover"><div class="full-bg-img"><div class="mask flex-center" style="background-color:rgba(0,0,0,.3)"><div class="container page-header text-center fade-in-up"><span class="h2" id="subtitle"></span><div class="mt-3"><span class="post-meta mr-2"><i class="iconfont icon-author" aria-hidden="true"></i> Raindew</span><span class="post-meta"><i class="iconfont icon-date-fill" aria-hidden="true"></i> <time datetime="2020-04-14 18:12" pubdate>2020年4月14日 晚上</time></span></div><div class="mt-1"><span class="post-meta mr-2"><i class="iconfont icon-chart"></i> 2.4k 字</span><span class="post-meta mr-2"><i class="iconfont icon-clock-fill"></i> 39 分钟</span></div></div></div></div></div></header><main><div class="container-fluid"><div class="row"><div class="d-none d-lg-block col-lg-2"></div><div class="col-lg-8 nopadding-md"><div class="container nopadding-md" id="board-ctn"><div class="py-5" id="board"><article class="post-content mx-auto" id="post"><h1 style="display:none">element-ui + vue-cropper 图片裁剪后上传</h1><p class="note note-info"> 本文最后更新于：2022年7月6日 上午</p><div class="markdown-body" id="post-body"><p>兵来将挡，水来土掩</p><a id="more"></a><h3 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h3><ul><li><a target="_blank" rel="noopener" href="https://github.com/xyxiao001/vue-cropper">vue-cropper</a></li><li><a target="_blank" rel="noopener" href="https://element.eleme.cn/#/zh-CN/component/upload">element-ui upload</a></li><li>整体分为两个组件来做<ul><li><code>cropper.vue</code> 主要负责图片裁剪，将裁剪之后的数据传递出来</li><li><code>crop-upload.vue</code>，引入 <code>cropper.vue</code> 作为子组件，将裁剪后的数据上传、显示上传列表等功能</li></ul></li></ul><h3 id="cropper-vue"><a href="#cropper-vue" class="headerlink" title="cropper.vue"></a><code>cropper.vue</code></h3><blockquote><p>这一步没什么难度，单独抽出来一个组件只是为了项目结构能清晰一点。<br>按照文档中的 demo 来设置即可，其中部分属性项目 demo 中没有提及，直接去看源码即可。</p></blockquote><h4 id="要注意的是，组件的外部一定要设置固定的宽高"><a href="#要注意的是，组件的外部一定要设置固定的宽高" class="headerlink" title="要注意的是，组件的外部一定要设置固定的宽高"></a>要注意的是，组件的外部一定要设置固定的宽高</h4><pre><code class="hljs html"><span class="hljs-comment">&lt;!--crop-box 设置固定宽高--&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;crop-box&quot;</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">vue-cropper</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:autoCrop</span>=<span class="hljs-string">&quot;cropperOption.autoCrop&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:autoCropHeight</span>=<span class="hljs-string">&quot;cropperOption.autoCropHeight&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:autoCropWidth</span>=<span class="hljs-string">&quot;cropperOption.autoCropWidth&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:canMove</span>=<span class="hljs-string">&quot;cropperOption.canMove&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:canMoveBox</span>=<span class="hljs-string">&quot;cropperOption.canMoveBox&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:canScale</span>=<span class="hljs-string">&quot;cropperOption.canScale&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:centerBox</span>=<span class="hljs-string">&quot;cropperOption.centerBox&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:enlarge</span>=<span class="hljs-string">&quot;cropperOption.enlarge&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:fixedBox</span>=<span class="hljs-string">&quot;cropperOption.fixedBox&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:fixed</span>=<span class="hljs-string">&quot;cropperOption.fixed&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:full</span>=<span class="hljs-string">&quot;cropperOption.full&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:high</span>=<span class="hljs-string">&quot;cropperOption.high&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:img</span>=<span class="hljs-string">&quot;cropperOption.img&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:info</span>=<span class="hljs-string">&quot;true&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:infoTrue</span>=<span class="hljs-string">&quot;cropperOption.infoTrue&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:limitMinSize</span>=<span class="hljs-string">&quot;cropperOption.limitMinSize&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:maxImgSize</span>=<span class="hljs-string">&quot;cropperOption.maxImgSize&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:mode</span>=<span class="hljs-string">&quot;cropperOption.mode&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:original</span>=<span class="hljs-string">&quot;cropperOption.original&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:outputSize</span>=<span class="hljs-string">&quot;cropperOption.size&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">:outputType</span>=<span class="hljs-string">&quot;cropperOption.outputType&quot;</span></span>
+<span class="hljs-tag">		@<span class="hljs-attr">cropMoving</span>=<span class="hljs-string">&quot;onCropMoving&quot;</span></span>
+<span class="hljs-tag">		@<span class="hljs-attr">imgLoad</span>=<span class="hljs-string">&quot;onImgLoad&quot;</span></span>
+<span class="hljs-tag">		@<span class="hljs-attr">realTime</span>=<span class="hljs-string">&quot;onRealTime&quot;</span></span>
+<span class="hljs-tag">		<span class="hljs-attr">ref</span>=<span class="hljs-string">&quot;cropper&quot;</span></span>
+<span class="hljs-tag">	&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">vue-cropper</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre><h4 id="组件中各个属性的含义如下："><a href="#组件中各个属性的含义如下：" class="headerlink" title="组件中各个属性的含义如下："></a>组件中各个属性的含义如下：</h4><pre><code class="hljs javascript">cropperOption: &#123;
+	img: <span class="hljs-string">&#x27;&#x27;</span>, <span class="hljs-comment">// 需要裁剪的图片</span>
+	size: <span class="hljs-number">1</span>, <span class="hljs-comment">// 输出图片压缩比, 默认 1</span>
+	full: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 是否输出原图比例的截图</span>
+	infoTrue: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 截图信息展示是否时真实的输出宽高</span>
+	outputType: <span class="hljs-string">&#x27;png&#x27;</span>, <span class="hljs-comment">// 输出的图片格式</span>
+	canScale: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 是否开启滚轮缩放大小</span>
+	canMove: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 能否拖动图片</span>
+	canMoveBox: <span class="hljs-literal">true</span>, <span class="hljs-comment">// 能否拖动截图框</span>
+	fixed: <span class="hljs-literal">true</span>, <span class="hljs-comment">// 项目要求方形裁剪,因此固定宽高比，默认宽高比是 1:1</span>
+	fixedBox: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 截图框固定大小</span>
+	original: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 上传图片时，是否显示原始宽高</span>
+	autoCrop: <span class="hljs-literal">true</span>, <span class="hljs-comment">// 是否自动生成截图框</span>
+	<span class="hljs-comment">// 只有自动截图开启 宽度高度才生效</span>
+	autoCropWidth: <span class="hljs-number">200</span>,
+	autoCropHeight: <span class="hljs-number">200</span>,
+	centerBox: <span class="hljs-literal">true</span>, <span class="hljs-comment">// 截图框是否限制在图片里(只有在自动生成截图框时才生效)</span>
+	high: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 是否根据 dpr 生成适合屏幕的高清图片</span>
+	cropData: &#123;&#125;,
+	enlarge: <span class="hljs-number">1</span>, <span class="hljs-comment">// 按照截图框比例输出，默认 1</span>
+	mode: <span class="hljs-string">&#x27;contain&#x27;</span>, <span class="hljs-comment">// 图片的默认渲染方式</span>
+	maxImgSize: <span class="hljs-number">2000</span>, <span class="hljs-comment">// 上传图片时图片最大大小(默认会压缩尺寸到这个大小)</span>
+	limitMinSize: [<span class="hljs-number">200</span>, <span class="hljs-number">200</span>] <span class="hljs-comment">// 截图框最小限制</span>
+&#125;</code></pre><h4 id="最终确定裁剪时，调用下面的方法获取裁剪后的数据"><a href="#最终确定裁剪时，调用下面的方法获取裁剪后的数据" class="headerlink" title="最终确定裁剪时，调用下面的方法获取裁剪后的数据"></a>最终确定裁剪时，调用下面的方法获取裁剪后的数据</h4><pre><code class="hljs javascript"><span class="hljs-comment">// 获取 blob</span>
+<span class="hljs-built_in">this</span>.$refs.cropper.getCropBlob(<span class="hljs-function">(<span class="hljs-params">blob</span>) =&gt;</span> &#123;
+	<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;crop onConfirm -&gt; blob&#x27;</span>, blob);
+&#125;);
+
+<span class="hljs-comment">// 获取 base64</span>
+<span class="hljs-built_in">this</span>.$refs.cropper.getCropData(<span class="hljs-function">(<span class="hljs-params">blob</span>) =&gt;</span> &#123;
+	<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;crop onConfirm -&gt; blob&#x27;</span>, blob);
+&#125;);</code></pre><h4 id="cropper-vue-最终代码"><a href="#cropper-vue-最终代码" class="headerlink" title="cropper.vue 最终代码"></a><code>cropper.vue</code> 最终代码</h4><pre><code class="hljs javascript">&lt;!--cropper.vue--&gt;
+&lt;template&gt;
+	&lt;div&gt;
+		&lt;el-dialog :visible.sync=<span class="hljs-string">&quot;visible&quot;</span> title=<span class="hljs-string">&quot;图片裁剪&quot;</span> width=<span class="hljs-string">&quot;800px&quot;</span>&gt;
+			&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;crop-container&quot;</span> v-show=<span class="hljs-string">&quot;!showPreview&quot;</span>&gt;
+				&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;crop-box&quot;</span>&gt;
+					&lt;vue-cropper
+						:autoCrop=<span class="hljs-string">&quot;cropperOption.autoCrop&quot;</span>
+						:autoCropHeight=<span class="hljs-string">&quot;cropperOption.autoCropHeight&quot;</span>
+						:autoCropWidth=<span class="hljs-string">&quot;cropperOption.autoCropWidth&quot;</span>
+						:canMove=<span class="hljs-string">&quot;cropperOption.canMove&quot;</span>
+						:canMoveBox=<span class="hljs-string">&quot;cropperOption.canMoveBox&quot;</span>
+						:canScale=<span class="hljs-string">&quot;cropperOption.canScale&quot;</span>
+						:centerBox=<span class="hljs-string">&quot;cropperOption.centerBox&quot;</span>
+						:enlarge=<span class="hljs-string">&quot;cropperOption.enlarge&quot;</span>
+						:fixedBox=<span class="hljs-string">&quot;cropperOption.fixedBox&quot;</span>
+						:fixed=<span class="hljs-string">&quot;cropperOption.fixed&quot;</span>
+						:full=<span class="hljs-string">&quot;cropperOption.full&quot;</span>
+						:high=<span class="hljs-string">&quot;cropperOption.high&quot;</span>
+						:img=<span class="hljs-string">&quot;cropperOption.img&quot;</span>
+						:info=<span class="hljs-string">&quot;true&quot;</span>
+						:infoTrue=<span class="hljs-string">&quot;cropperOption.infoTrue&quot;</span>
+						:limitMinSize=<span class="hljs-string">&quot;cropperOption.limitMinSize&quot;</span>
+						:maxImgSize=<span class="hljs-string">&quot;cropperOption.maxImgSize&quot;</span>
+						:mode=<span class="hljs-string">&quot;cropperOption.mode&quot;</span>
+						:original=<span class="hljs-string">&quot;cropperOption.original&quot;</span>
+						:outputSize=<span class="hljs-string">&quot;cropperOption.size&quot;</span>
+						:outputType=<span class="hljs-string">&quot;cropperOption.outputType&quot;</span>
+						@cropMoving=<span class="hljs-string">&quot;onCropMoving&quot;</span>
+						@imgLoad=<span class="hljs-string">&quot;onImgLoad&quot;</span>
+						@realTime=<span class="hljs-string">&quot;onRealTime&quot;</span>
+						ref=<span class="hljs-string">&quot;cropper&quot;</span>
+					&gt;&lt;/vue-cropper&gt;
+				&lt;/div&gt;
+				&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;crop-action&quot;</span>&gt;
+          &lt;el-button @click=<span class="hljs-string">&quot;onConfirm&quot;</span> type=<span class="hljs-string">&quot;primary&quot;</span>&gt;确 定&lt;/el-button&gt;
+					&lt;el-button @click=<span class="hljs-string">&quot;showPreview = true&quot;</span>&gt;预 览&lt;/el-button&gt;
+					&lt;el-button @click=<span class="hljs-string">&quot;onCancel&quot;</span>&gt;取 消&lt;/el-button&gt;
+				&lt;/div&gt;
+			&lt;/div&gt;
+			&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;crop-container&quot;</span> v-show=<span class="hljs-string">&quot;showPreview&quot;</span>&gt;
+				&lt;div :style=<span class="hljs-string">&quot;previews.div&quot;</span> <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;crop-preview&quot;</span>&gt;
+					&lt;img :src=<span class="hljs-string">&quot;previews.url&quot;</span> :style=<span class="hljs-string">&quot;previews.img&quot;</span> alt /&gt;
+				&lt;/div&gt;
+				&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;crop-action&quot;</span>&gt;
+					&lt;el-button @click=<span class="hljs-string">&quot;onConfirm&quot;</span> type=<span class="hljs-string">&quot;primary&quot;</span>&gt;确 定&lt;/el-button&gt;
+					&lt;el-button @click=<span class="hljs-string">&quot;showPreview = false&quot;</span>&gt;取消预览&lt;/el-button&gt;
+				&lt;/div&gt;
+			&lt;/div&gt;
+		&lt;/el-dialog&gt;
+	&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+<span class="hljs-keyword">import</span> &#123; VueCropper &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;vue-cropper&#x27;</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> &#123;
+	name: <span class="hljs-string">&#x27;cropper-upload&#x27;</span>,
+	data() &#123;
+		<span class="hljs-keyword">return</span> &#123;
+			visible: <span class="hljs-literal">false</span>,
+			previews: &#123;&#125;,
+			showPreview: <span class="hljs-literal">false</span>,
+			crap: <span class="hljs-literal">false</span>,
+			cropperOption: &#123;
+				img: <span class="hljs-string">&#x27;&#x27;</span>,
+				size: <span class="hljs-number">1</span>, <span class="hljs-comment">// 输出图片压缩比, 默认 1</span>
+				full: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 是否输出原图比例的截图</span>
+				infoTrue: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 截图信息展示是否时真实的输出宽高</span>
+				outputType: <span class="hljs-string">&#x27;png&#x27;</span>,
+				canScale: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 是否开启滚轮缩放大小</span>
+				canMove: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 能否拖动图片</span>
+				canMoveBox: <span class="hljs-literal">true</span>, <span class="hljs-comment">// 能否拖动截图框</span>
+				fixed: <span class="hljs-literal">true</span>, <span class="hljs-comment">// 固定宽高比</span>
+				fixedBox: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 截图框固定大小</span>
+				original: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 上传图片时，是否显示原始宽高</span>
+				autoCrop: <span class="hljs-literal">true</span>, <span class="hljs-comment">// 是否自动生成截图框</span>
+				<span class="hljs-comment">// 只有自动截图开启 宽度高度才生效</span>
+				autoCropWidth: <span class="hljs-number">200</span>,
+				autoCropHeight: <span class="hljs-number">200</span>,
+				centerBox: <span class="hljs-literal">true</span>, <span class="hljs-comment">// 截图框是否限制在图片里(只有在自动生成截图框时才生效)</span>
+				high: <span class="hljs-literal">false</span>, <span class="hljs-comment">// 是否根据 dpr 生成适合屏幕的高清图片</span>
+				cropData: &#123;&#125;,
+				enlarge: <span class="hljs-number">1</span>, <span class="hljs-comment">// 按照截图框比例输出，默认 1</span>
+				mode: <span class="hljs-string">&#x27;contain&#x27;</span>, <span class="hljs-comment">// 图片的默认渲染方式</span>
+				maxImgSize: <span class="hljs-number">2000</span>, <span class="hljs-comment">// 上传图片时图片最大大小(默认会压缩尺寸到这个大小)</span>
+				limitMinSize: [<span class="hljs-number">200</span>, <span class="hljs-number">200</span>] <span class="hljs-comment">// 截图框最小限制</span>
+			&#125;
+		&#125;;
+  &#125;,
+  computed: &#123;
+    cropper() &#123;
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.$refs.cropper;
+    &#125;,
+  &#125;,
+	methods: &#123;
+		show(file) &#123;
+			<span class="hljs-built_in">this</span>.cropperOption.img = file.url;
+			<span class="hljs-built_in">this</span>.$nextTick(<span class="hljs-function">() =&gt;</span> &#123;
+				<span class="hljs-built_in">this</span>.visible = <span class="hljs-literal">true</span>;
+			&#125;);
+		&#125;,
+		hide() &#123;
+			<span class="hljs-built_in">this</span>.visible = <span class="hljs-literal">false</span>;
+		&#125;,
+		<span class="hljs-comment">// 实时预览函数</span>
+		<span class="hljs-comment">// data 中保存了需要预览的样式及 url，直接用就行了</span>
+		onRealTime(data) &#123;
+			<span class="hljs-comment">// console.log(&#x27;onRealTime -&gt; data&#x27;, data);</span>
+			<span class="hljs-built_in">this</span>.previews = data;
+		&#125;,
+		onImgLoad(msg) &#123;
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;onImgLoad -&gt; msg&#x27;</span>, msg);
+			<span class="hljs-comment">// 图片加载完成后，获取图片的真实宽高</span>
+			<span class="hljs-comment">// 以最小的那个值作为裁剪框默认大小</span>
+      <span class="hljs-keyword">const</span> &#123; trueWidth, trueHeight &#125; = <span class="hljs-built_in">this</span>.cropper;
+      <span class="hljs-keyword">const</span> width = <span class="hljs-built_in">Math</span>.min(trueWidth, trueHeight);
+      <span class="hljs-built_in">this</span>.cropperOption.autoCropWidth = width;
+      <span class="hljs-built_in">this</span>.cropperOption.autoCropHeight = width;
+		&#125;,
+		onCropMoving(data) &#123;
+			<span class="hljs-built_in">this</span>.cropperOption.cropData = data;
+		&#125;,
+		onConfirm() &#123;
+			<span class="hljs-comment">// 获取裁剪后的 blob 数据，传递到外部</span>
+			<span class="hljs-built_in">this</span>.$refs.cropper.getCropBlob(<span class="hljs-function"><span class="hljs-params">blob</span> =&gt;</span> &#123;
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;crop onConfirm -&gt; blob&#x27;</span>, blob);
+        <span class="hljs-built_in">this</span>.hide();
+        <span class="hljs-built_in">this</span>.$emit(<span class="hljs-string">&#x27;on-finish&#x27;</span>, blob);
+			&#125;);
+		&#125;,
+		onCancel() &#123;
+			<span class="hljs-built_in">this</span>.hide();
+			<span class="hljs-built_in">this</span>.$emit(<span class="hljs-string">&#x27;on-cancel&#x27;</span>);
+		&#125;
+	&#125;,
+	components: &#123;
+		VueCropper
+	&#125;
+&#125;;
+&lt;/script&gt;
+
+&lt;style lang=<span class="hljs-string">&quot;stylus&quot;</span> scoped&gt;
+.crop-container &#123;
+  display: flex;
+  align-items: center;
+&#125;
+.crop-box &#123;
+  margin: <span class="hljs-number">0</span> auto;
+  width: <span class="hljs-number">700</span>px;
+  height: <span class="hljs-number">600</span>px;
+&#125;
+.crop-preview &#123;
+  margin: auto;
+  border: 1px dotted #e4e4e4;
+  overflow: hidden;
+&#125;
+.crop-action &#123;
+  width: <span class="hljs-number">100</span>px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+&#125;
+.el-button &#123;
+  width: <span class="hljs-number">98</span>px;
+  margin-bottom: <span class="hljs-number">20</span>px;
+  margin-left: <span class="hljs-number">10</span>px;
+&#125;
+&lt;/style&gt;
+</code></pre><h3 id="crop-upload-vue"><a href="#crop-upload-vue" class="headerlink" title="crop-upload.vue"></a><code>crop-upload.vue</code></h3><h4 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h4><ul><li>因为需要先裁剪再上传，因此需要关闭自动上传设置：<code>auto-upload</code> 设置为 false</li><li>之后，利用上一步裁剪后的数据进行 <code>FormData</code> 上传即可</li><li>还有就是，没有用 el-upload 自带的 <code>file-list</code>，主要是为了能获取到当前裁剪的是哪个图片，方便进行对应的更新</li></ul><h4 id="最终代码"><a href="#最终代码" class="headerlink" title="最终代码"></a>最终代码</h4><pre><code class="hljs javascript">&lt;template&gt;
+	&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;crop-upload&quot;</span>&gt;
+		&lt;div <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;crop-upload-list&quot;</span>&gt;
+			&lt;ul <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list el-upload-list--picture-card&quot;</span>&gt;
+				&lt;li
+					:key=<span class="hljs-string">&quot;item.url&quot;</span>
+					:tabindex=<span class="hljs-string">&quot;index&quot;</span>
+					<span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list__item is-success&quot;</span>
+					v-<span class="hljs-keyword">for</span>=<span class="hljs-string">&quot;(item, index) in fileList&quot;</span>
+				&gt;
+					&lt;img :src=<span class="hljs-string">&quot;item.url&quot;</span> alt <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list__item-thumbnail&quot;</span> /&gt;
+					&lt;a <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list__item-name&quot;</span>&gt;
+						&lt;i <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-icon-document&quot;</span>&gt;&lt;/i&gt;
+					&lt;/a&gt;
+					&lt;label <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list__item-status-label&quot;</span>&gt;
+						&lt;i <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-icon-upload-success el-icon-check&quot;</span>&gt;&lt;/i&gt;
+					&lt;/label&gt;
+					&lt;i <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-icon-close&quot;</span>&gt;&lt;/i&gt;
+					&lt;i <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-icon-close-tip&quot;</span>&gt;按 <span class="hljs-keyword">delete</span> 键可删除&lt;/i&gt;
+					&lt;!----&gt;
+					&lt;span <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list__item-actions&quot;</span>&gt;
+						&lt;span @click=<span class="hljs-string">&quot;onEdit(index)&quot;</span> <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list__item-preview&quot;</span>&gt;
+							&lt;i <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-icon-edit&quot;</span>&gt;&lt;/i&gt;
+						&lt;/span&gt;
+						&lt;span @click=<span class="hljs-string">&quot;onPreview(item)&quot;</span> <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list__item-preview&quot;</span>&gt;
+							&lt;i <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-icon-zoom-in&quot;</span>&gt;&lt;/i&gt;
+						&lt;/span&gt;
+						&lt;span @click=<span class="hljs-string">&quot;onRemove(index)&quot;</span> <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-upload-list__item-delete&quot;</span>&gt;
+							&lt;i <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-icon-delete&quot;</span>&gt;&lt;/i&gt;
+						&lt;/span&gt;
+					&lt;/span&gt;
+				&lt;/li&gt;
+			&lt;/ul&gt;
+			&lt;el-upload
+				:action=<span class="hljs-string">&quot;uploadUrl&quot;</span>
+				:auto-upload=<span class="hljs-string">&quot;false&quot;</span>
+				:data=<span class="hljs-string">&quot;uploadData&quot;</span>
+				:headers=<span class="hljs-string">&quot;headers&quot;</span>
+				:limit=<span class="hljs-string">&quot;limit&quot;</span>
+				:on-change=<span class="hljs-string">&quot;onChange&quot;</span>
+				:on-exceed=<span class="hljs-string">&quot;onExceed&quot;</span>
+				:show-file-list=<span class="hljs-string">&quot;false&quot;</span>
+				list-type=<span class="hljs-string">&quot;picture-card&quot;</span>
+				ref=<span class="hljs-string">&quot;upload&quot;</span>
+			&gt;
+				&lt;i <span class="hljs-class"><span class="hljs-keyword">class</span></span>=<span class="hljs-string">&quot;el-icon-plus&quot;</span>&gt;&lt;/i&gt;
+			&lt;/el-upload&gt;
+		&lt;/div&gt;
+		&lt;cropper
+			:visible.sync=<span class="hljs-string">&quot;cropperVisible&quot;</span>
+			@on-cancel=<span class="hljs-string">&quot;onCropCancel&quot;</span>
+			@on-finish=<span class="hljs-string">&quot;onCropFinish&quot;</span>
+			ref=<span class="hljs-string">&quot;cropper&quot;</span>
+		&gt;&lt;/cropper&gt;
+		&lt;el-dialog :visible.sync=<span class="hljs-string">&quot;dialogVisible&quot;</span>&gt;
+			&lt;img :src=<span class="hljs-string">&quot;dialogImageUrl&quot;</span> alt width=<span class="hljs-string">&quot;100%&quot;</span> /&gt;
+		&lt;/el-dialog&gt;
+	&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+<span class="hljs-keyword">import</span> Cropper <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;./cropper.vue&#x27;</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> &#123;
+	props: &#123;
+		limit: &#123;
+			type: <span class="hljs-built_in">Number</span>,
+			<span class="hljs-keyword">default</span>: <span class="hljs-number">10</span>
+		&#125;,
+		fileList: &#123;
+			type: <span class="hljs-built_in">Array</span>,
+			<span class="hljs-keyword">default</span>: <span class="hljs-function">() =&gt;</span> []
+		&#125;
+	&#125;,
+	data() &#123;
+		<span class="hljs-keyword">return</span> &#123;
+			headers: &#123;
+				<span class="hljs-comment">// your headers</span>
+			&#125;,
+			uploadUrl: <span class="hljs-string">&#x27;upload url&#x27;</span>,
+			uploadData: &#123;&#125;,
+			dialogVisible: <span class="hljs-literal">false</span>,
+			dialogImageUrl: <span class="hljs-string">&#x27;&#x27;</span>,
+			cropperVisible: <span class="hljs-literal">false</span>,
+			selectedCropIndex: <span class="hljs-number">-1</span>
+		&#125;;
+	&#125;,
+	computed: &#123;
+		upload() &#123;
+			<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.$refs.upload;
+		&#125;,
+		cropper() &#123;
+			<span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.$refs.cropper;
+		&#125;
+	&#125;,
+	created() &#123;&#125;,
+	methods: &#123;
+    <span class="hljs-comment">// 删除</span>
+		onRemove(index) &#123;
+			<span class="hljs-keyword">const</span> newFileList = <span class="hljs-built_in">this</span>.fileList;
+			newFileList.splice(index, <span class="hljs-number">1</span>);
+			<span class="hljs-built_in">this</span>.$emit(<span class="hljs-string">&#x27;update:fileList&#x27;</span>, newFileList);
+		&#125;,
+    <span class="hljs-comment">// 预览</span>
+		onPreview(item) &#123;
+			<span class="hljs-built_in">this</span>.dialogImageUrl = item.url;
+			<span class="hljs-built_in">this</span>.dialogVisible = <span class="hljs-literal">true</span>;
+		&#125;,
+    <span class="hljs-comment">// 弹出裁剪组件</span>
+		onEdit(index) &#123;
+			<span class="hljs-built_in">this</span>.selectedCropIndex = index;
+			<span class="hljs-keyword">const</span> file = <span class="hljs-built_in">this</span>.fileList[index];
+			<span class="hljs-built_in">this</span>.cropper.show(file);
+		&#125;,
+		onExceed() &#123;
+			<span class="hljs-built_in">this</span>.$message(&#123;
+				type: <span class="hljs-string">&#x27;error&#x27;</span>,
+				message: <span class="hljs-string">&#x27;超出上传数量限制,无法继续上传&#x27;</span>
+			&#125;);
+		&#125;,
+		<span class="hljs-comment">// 文件状态改变时的钩子，添加文件，弹出裁剪组件</span>
+		onChange(file, fileList) &#123;
+			<span class="hljs-built_in">this</span>.cropper.show(file);
+		&#125;,
+    <span class="hljs-comment">// 监听裁剪结束，进行上传</span>
+		onCropFinish(data) &#123;
+			<span class="hljs-keyword">const</span> loading = <span class="hljs-built_in">this</span>.$loading(&#123;
+				lock: <span class="hljs-literal">true</span>,
+				text: <span class="hljs-string">&#x27;Loading&#x27;</span>,
+				spinner: <span class="hljs-string">&#x27;el-icon-loading&#x27;</span>,
+				background: <span class="hljs-string">&#x27;rgba(0, 0, 0, 0.7)&#x27;</span>
+			&#125;);
+			<span class="hljs-built_in">this</span>.doUpload(data)
+				.then(<span class="hljs-function"><span class="hljs-params">url</span> =&gt;</span> &#123;
+					<span class="hljs-comment">// 更新对应 index 的 url</span>
+					<span class="hljs-keyword">const</span> newFileList = <span class="hljs-built_in">this</span>.fileList;
+					<span class="hljs-keyword">const</span> item = &#123; url, &#125;;
+					<span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span>.selectedCropIndex === <span class="hljs-number">-1</span>) &#123;
+						newFileList.push(item);
+					&#125; <span class="hljs-keyword">else</span> &#123;
+						newFileList[<span class="hljs-built_in">this</span>.selectedCropIndex] = item;
+					&#125;
+					<span class="hljs-built_in">this</span>.$emit(<span class="hljs-string">&#x27;update:fileList&#x27;</span>, newFileList);
+				&#125;)
+				.finally(<span class="hljs-function">() =&gt;</span> &#123;
+					<span class="hljs-built_in">this</span>.reset();
+					loading.close();
+				&#125;);
+		&#125;,
+    <span class="hljs-comment">// 取消裁剪</span>
+		onCropCancel() &#123;
+			<span class="hljs-built_in">this</span>.reset();
+		&#125;,
+		doUpload(data) &#123;
+			<span class="hljs-comment">// your custom upload</span>
+		&#125;,
+		reset() &#123;
+			<span class="hljs-built_in">this</span>.selectedCropIndex = <span class="hljs-number">-1</span>;
+		&#125;
+	&#125;,
+	components: &#123;
+		Cropper
+	&#125;
+&#125;;
+&lt;/script&gt;
+
+&lt;style lang=<span class="hljs-string">&quot;stylus&quot;</span> scoped&gt;
+.crop-upload-list &#123;
+  display: flex;
+&#125;
+&lt;/style&gt;
+</code></pre></div><hr><div><div class="post-metas mb-3"><div class="post-meta mr-3"><i class="iconfont icon-category"></i> <a class="hover-with-bg" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></div><div class="post-meta"><i class="iconfont icon-tags"></i> <a class="hover-with-bg" href="/tags/vue/">vue</a></div></div><p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p><div class="post-prevnext row"><article class="post-prev col-6"><a href="/2020/04/17/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%E4%B9%8B%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E5%B0%8F%E7%A8%8B%E5%BA%8F%E7%A0%81/"><i class="iconfont icon-arrowleft"></i> <span class="hidden-mobile">微信小程序之如何保存小程序码</span> <span class="visible-mobile">上一篇</span></a></article><article class="post-next col-6"> <a href="/2020/03/22/%E6%88%91%E5%8F%88%E5%AD%A6%E4%BA%86%E5%87%A0%E6%9D%A1-Git-%E5%93%A6/"><span class="hidden-mobile">我又学了几条 Git 哦</span> <span class="visible-mobile">下一篇</span><i class="iconfont icon-arrowright"></i></a></article></div></div></article></div></div></div><div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn"><div id="toc"><p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p><div id="tocbot"></div></div></div></div></div><div class="col-lg-7 mx-auto nopadding-md"><div class="container custom post-content mx-auto"> <img src="/images/wechatpay.jpg" srcset="/img/loading.gif" class="rounded mx-auto d-block mt-5" style="width:200px;height:271px"></div></div></main><a id="scroll-top-button" href="#" role="button"><i class="iconfont icon-arrowup" aria-hidden="true"></i></a><div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-lg" role="document"><div class="modal-content"><div class="modal-header text-center"><h4 class="modal-title w-100 font-weight-bold">搜索</h4> <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span></button></div><div class="modal-body mx-3"><div class="md-form mb-5"> <input type="text" id="local-search-input" class="form-control validate"> <label data-error="x" data-success="v" for="local-search-input">关键词</label></div><div class="list-group" id="local-search-result"></div></div></div></div></div><footer class="mt-5"><div class="text-center py-3"><div> <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a><i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a></div></div></footer><script src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js"></script><script src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js"></script><script src="/js/debouncer.js"></script><script src="/js/main.js"></script><script src="/js/lazyload.js"></script><script defer="defer" src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js"></script><script src="/js/clipboard-use.js"></script><script src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js"></script><script>$(document).ready(function(){var t=$("#board-ctn").offset().top;tocbot.init({tocSelector:"#tocbot",contentSelector:"#post-body",headingSelector:"h1,h2,h3,h4,h5,h6",linkClass:"tocbot-link",activeLinkClass:"tocbot-active-link",listClass:"tocbot-list",isCollapsedClass:"tocbot-is-collapsed",collapsibleClass:"tocbot-is-collapsible",collapseDepth:0,scrollSmooth:!0,headingsOffset:-t}),0<$(".toc-list-item").length&&$("#toc").css("visibility","visible")})</script><script src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js"></script><script>var typed=new Typed("#subtitle",{strings:["  ","element-ui + vue-cropper 图片裁剪后上传&nbsp;"],cursorChar:"_",typeSpeed:70,loop:!1});typed.stop(),$(document).ready(function(){$(".typed-cursor").addClass("h2"),typed.start()})</script><script src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js"></script><script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script><script src="/js/local-search.js"></script><script>var path="/local-search.xml",inputArea=document.querySelector("#local-search-input");inputArea.onclick=function(){searchFunc(path,"local-search-input","local-search-result"),this.onclick=null}</script><script src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js"></script><link rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css"><script>$("#post img:not(.no-zoom img, img[no-zoom]), img[zoom]").each(function(){var t=document.createElement("a");$(t).attr("data-fancybox","images"),$(t).attr("href",$(this).attr("src")),$(this).wrap(t)})</script><script src="https://cdn.jsdelivr.net/npm/live2d-widget@^3.1.3/lib/L2Dwidget.min.js"></script><script>L2Dwidget.init({pluginRootPath:"live2dw/",pluginJsPath:"lib/",pluginModelPath:"assets/",tagMode:!1,debug:!1,model:{scale:1,hHeadPos:.5,vHeadPos:.618,jsonPath:"/live2dw/assets/shizuku.model.json"},display:{superSample:2,width:125,height:125,position:"right",hOffset:30,vOffset:-20},mobile:{show:!1,scale:.05},react:{opacityDefault:1,opacityOnHover:.2},log:!1})</script></body></html>
